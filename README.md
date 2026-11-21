@@ -1,6 +1,8 @@
 # Biblia gdańska 1879 a King James Version
 
-Zestawienie różnic między wydaniem Biblii gdańskiej z 1879 roku a tekstem King James Version w brzmieniu z 1769 roku. PDF nie jest częścią repozytorium. Powstaje lokalnie po uruchomieniu generatora i nazywa się `BG1879-a-KJV.pdf`.
+Zestawienie różnic między wydaniem Biblii gdańskiej z 1879 roku a tekstem King James Version w brzmieniu z 1769 roku. PDF nie jest częścią repozytorium. Nazywa się `BG1879-a-KJV.pdf`.
+
+Pierwsze wydanie to tag `v1`: obecny generator i obecne teksty. Przy wydaniu GitHub Actions buduje ten PDF i dokłada go do wydania.
 
 Porównanie dotyczy folderu `1879` w repozytorium [UczenJezusa/biblia-druk-tekst](https://github.com/UczenJezusa/biblia-druk-tekst), commit `e5b1d3962179321a7bc9e502e634a2354c49a0a5`. Wydania z 1632 i z 2023 roku nie wchodzą do zestawienia. Rok 1879 jest unowocześnioną pisownią przekładu z 1632 roku, nie nowym tłumaczeniem.
 
@@ -16,6 +18,21 @@ Teksty są submodułami, przypiętymi do commitów, na których powstało to zes
 | `zrodla/bible` | [thiagobodruk/bible](https://github.com/thiagobodruk/bible) | `df0860fe0921b5b899d1b554041900ab072cd4c4` | `json/en_kjv.json` |
 
 Drugie repozytorium jest duże, około 500 MB, bo trzyma wiele przekładów. Z niego używany jest jeden plik.
+
+## Wydania
+
+Tag postaci `v1`, `v2`, `v3` uruchamia akcję [PDF wydania](.github/workflows/pdf-wydania.yml). To samo dzieje się, gdy na GitHubie powstaje opublikowane wydanie z takiego tagu.
+
+Akcja bierze kod z tego tagu i teksty z commitów, które tag przypina w submodułach. Z repozytorium `bible` ściąga tylko `json/en_kjv.json`. Gotowy plik dokłada jako `BG1879-a-KJV.pdf`. Jeśli wydania jeszcze nie ma, tworzy je. Jeśli jest, dopisuje tylko plik i nie rusza tytułu ani opisu.
+
+Kolejne wydanie:
+
+```bash
+git tag v2
+git push origin v2
+```
+
+Lokalne zbudowanie PDF, bez wydania, jest opisane niżej. Plik wynikowy dalej nie wchodzi do gita.
 
 ## Jak odtworzyć PDF
 

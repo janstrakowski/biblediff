@@ -1,0 +1,118 @@
+name: PDF wydania
+
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pdf-wydanie-${{ github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref_name }}
+    steps:
+      - name: Pobierz kod wydania
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+
+      - name: Sprawdź, czy PDF już jest przy wydaniu
+        id: jest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          found="$(gh release view "$TAG" --json assets --jq '.assets[] | select(.name == "BG1879-a-KJV.pdf") | .name' 2>/dev/null || true)"
+          if [ -n "$found" ]; then
+            echo "PDF już jest przy wydaniu $TAG."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Python
+        if: steps.jest.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Zależności PDF
+        if: steps.jest.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y fonts-dejavu-core
+          python -m pip install fpdf2
+
+      - name: Teksty źródłowe przypięte w tym tagu
+        if: steps.jest.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          fetch_at() {
+            url="$1"
+            dest="$2"
+            sha="$3"
+            shift 3
+            rm -rf "$dest"
+            mkdir -p "$dest"
+            git -C "$dest" init -q
+            git -C "$dest" remote add origin "$url"
+            git -C "$dest" fetch --filter=blob:none --depth 1 origin "$sha"
+            if [ "$1" = "--no-cone" ]; then
+              shift
+              git -C "$dest" sparse-checkout set --no-cone "$@"
+            else
+              git -C "$dest" sparse-checkout set --cone "$@"
+            fi
+            git -C "$dest" checkout --detach FETCH_HEAD
+            test "$(git -C "$dest" rev-parse HEAD)" = "$sha"
+          }
+          bible_sha="$(git rev-parse HEAD:zrodla/bible)"
+          bg_sha="$(git rev-parse HEAD:zrodla/biblia-druk-tekst)"
+          echo "KJV $bible_sha"
+          echo "BG  $bg_sha"
+          fetch_at https://github.com/thiagobodruk/bible.git zrodla/bible "$bible_sha" \
+            --no-cone json/en_kjv.json
+          fetch_at https://github.com/UczenJezusa/biblia-druk-tekst.git zrodla/biblia-druk-tekst "$bg_sha" \
+            1879
+
+      - name: Zbuduj PDF
+        if: steps.jest.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          python zestawienie/buduj_pdf.py
+          test -s BG1879-a-KJV.pdf
+
+      - name: Dołącz PDF do wydania
+        if: steps.jest.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" BG1879-a-KJV.pdf --clobber
+          else
+            if [ "$TAG" = "v1" ]; then
+              title="Wydanie pierwsze"
+              notes="$(printf '%s\n' \
+                "Pierwsze wydanie zestawienia Biblii gdańskiej z 1879 roku z King James Version." \
+                "" \
+                "Plik BG1879-a-KJV.pdf zbudowała akcja z tagu v1. Źródła są tymi commitami, które tag przypina w submodułach.")"
+            else
+              title="Wydanie $TAG"
+              notes="PDF zestawienia zbudowany z tagu ${TAG}."
+            fi
+            gh release create "$TAG" BG1879-a-KJV.pdf --title "$title" --notes "$notes"
+          fi
