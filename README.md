@@ -39,3 +39,7 @@ python zestawienie/buduj_pdf.py
 `environment.yml` stawia osobne środowisko Condy: Python, `fpdf2` i czcionki DejaVu z pakietu `open-fonts`. Nic nie instaluje się globalnie. Przy kolejnym uruchomieniu wystarczy `conda activate biblediff`.
 
 Wynik zapisuje się jako `BG1879-a-KJV.pdf` w katalogu głównym. Tego pliku nie commituje się. Ścieżki tekstów można nadpisać zmiennymi `BG1879` i `KJV_JSON`, a katalog czcionek zmienną `FONT_DIR`.
+
+## Całość
+
+Plan przejścia każdego wersetu, nie tylko klas z obecnego PDF-a, jest w [`zestawienie/calosc.md`](zestawienie/calosc.md). Najpierw powstanie PDF ze wszystkim, co przeszło przez filtr. Odrzucenie fałszywych trafień jest późniejsze.
