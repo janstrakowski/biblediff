@@ -6,16 +6,36 @@ Porównanie dotyczy folderu `1879` w repozytorium [UczenJezusa/biblia-druk-tekst
 
 Różnicą jest tu inny numer wersetu, inne słowo zmieniające obraz, inny wariant tekstu albo inne oddanie nazwy własnej. Zwykłe odpowiedniki dwóch języków, takie jak Mojżesz i Moses, na liście nie stoją.
 
+## Źródła
+
+Teksty są submodułami, przypiętymi do commitów, na których powstało to zestawienie.
+
+| Ścieżka | Repozytorium | Commit | Co jest czytane |
+| --- | --- | --- | --- |
+| `zrodla/biblia-druk-tekst` | [UczenJezusa/biblia-druk-tekst](https://github.com/UczenJezusa/biblia-druk-tekst) | `e5b1d3962179321a7bc9e502e634a2354c49a0a5` | folder `1879` |
+| `zrodla/bible` | [thiagobodruk/bible](https://github.com/thiagobodruk/bible) | `df0860fe0921b5b899d1b554041900ab072cd4c4` | `json/en_kjv.json` |
+
+Drugie repozytorium jest duże, około 500 MB, bo trzyma wiele przekładów. Z niego używany jest jeden plik.
+
 ## Jak odtworzyć PDF
 
-Pakiet `fpdf2` instaluje się w osobnym środowisku Condy, z kanału conda-forge. Skrypt czyta dwa lokalne źródła. Domyślne ścieżki można nadpisać zmiennymi `BG1879` (folder `1879` z klonu `biblia-druk-tekst`) i `KJV_JSON` (plik JSON z tekstem KJV z 1769 roku).
-
 ```bash
+git clone --recurse-submodules git@github.com:janstrakowski/biblediff.git
+cd biblediff
 conda env create -f environment.yml
 conda activate biblediff
 python zestawienie/buduj_pdf.py
 ```
 
-Przy kolejnym uruchomieniu wystarczy `conda activate biblediff`. Po zmianie `environment.yml` środowisko odświeża `conda env update -f environment.yml --prune`.
+Jeśli katalog jest już sklonowany bez submodułów:
 
-Wynik zapisuje się jako `BG1879-a-KJV.pdf` w katalogu głównym. Tego pliku nie commituje się.
+```bash
+git submodule update --init
+conda env update -f environment.yml --prune
+conda activate biblediff
+python zestawienie/buduj_pdf.py
+```
+
+`environment.yml` stawia osobne środowisko Condy: Python, `fpdf2` i czcionki DejaVu z pakietu `open-fonts`. Nic nie instaluje się globalnie. Przy kolejnym uruchomieniu wystarczy `conda activate biblediff`.
+
+Wynik zapisuje się jako `BG1879-a-KJV.pdf` w katalogu głównym. Tego pliku nie commituje się. Ścieżki tekstów można nadpisać zmiennymi `BG1879` i `KJV_JSON`, a katalog czcionek zmienną `FONT_DIR`.

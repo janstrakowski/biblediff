@@ -1,0 +1,6 @@
+[submodule "zrodla/biblia-druk-tekst"]
+	path = zrodla/biblia-druk-tekst
+	url = https://github.com/UczenJezusa/biblia-druk-tekst.git
+[submodule "zrodla/bible"]
+	path = zrodla/bible
+	url = https://github.com/thiagobodruk/bible.git

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Zestawienie Biblii gdańskiej z 1879 roku z King James Version.
 
-Cytaty polskie biorą się z folderu 1879 w klonie
-https://github.com/UczenJezusa/biblia-druk-tekst (commit zapisany niżej).
-Cytaty angielskie biorą się z publicznego tekstu KJV w rewizji z 1769 roku.
+Cytaty polskie biorą się z submodułu zrodla/biblia-druk-tekst, folder 1879.
+Cytaty angielskie biorą się z submodułu zrodla/bible, plik json/en_kjv.json.
 """
 
 from __future__ import annotations
@@ -15,13 +14,20 @@ from pathlib import Path
 
 from fpdf import FPDF
 
-ROOT = Path(os.environ.get("BG1879", "/tmp/biblia-src/biblia-druk-tekst/1879"))
-KJV_PATH = Path(os.environ.get("KJV_JSON", "/tmp/kjv-src/try.json"))
-OUT = Path(__file__).resolve().parent.parent / "BG1879-a-KJV.pdf"
+REPO = Path(__file__).resolve().parent.parent
+ROOT = Path(os.environ["BG1879"]) if os.environ.get("BG1879") else REPO / "zrodla" / "biblia-druk-tekst" / "1879"
+KJV_PATH = Path(os.environ["KJV_JSON"]) if os.environ.get("KJV_JSON") else REPO / "zrodla" / "bible" / "json" / "en_kjv.json"
+OUT = REPO / "BG1879-a-KJV.pdf"
 COMMIT = "e5b1d3962179321a7bc9e502e634a2354c49a0a5"
 COMMIT_WHEN = "8 listopada 2026, 7:57 (czas środkowoeuropejski)"
 
-FONT = "/usr/share/fonts/truetype/dejavu"
+# Nazwy z pakietu systemowego i z conda-forge open-fonts (tam jest przyrostek Regular).
+FONT_FILES = {
+    "sans": ("DejaVuSans.ttf", "DejaVuSans-Regular.ttf"),
+    "sans-bold": ("DejaVuSans-Bold.ttf",),
+    "serif": ("DejaVuSerif.ttf", "DejaVuSerif-Regular.ttf"),
+    "serif-bold": ("DejaVuSerif-Bold.ttf",),
+}
 
 # Kolejność ksiąg w repozytorium i w pliku KJV jest ta sama.
 PL = [
@@ -41,7 +47,47 @@ PL = [
 ]
 
 
+def font_dirs():
+    dirs = []
+    if os.environ.get("FONT_DIR"):
+        dirs.append(Path(os.environ["FONT_DIR"]))
+    prefix = os.environ.get("CONDA_PREFIX")
+    if prefix:
+        dirs.append(Path(prefix) / "fonts" / "open-fonts")
+    dirs.extend([
+        Path("/usr/share/fonts/truetype/dejavu"),
+        Path("/usr/share/fonts/dejavu"),
+        Path("/usr/share/fonts/TTF"),
+    ])
+    return dirs
+
+
+def font_file(key):
+    names = FONT_FILES[key]
+    for folder in font_dirs():
+        for name in names:
+            path = folder / name
+            if path.is_file():
+                return path
+    looked = ", ".join(str(d) for d in font_dirs())
+    raise SystemExit(
+        "Nie znajduję czcionek DejaVu (Sans i Serif, zwykła i pogrubiona).\n"
+        "W środowisku Condy są w pakiecie open-fonts:\n"
+        "  conda env update -f environment.yml --prune\n"
+        "albo wskaż katalog zmienną FONT_DIR.\n"
+        f"Szukane katalogi: {looked}"
+    )
+
+
 def load():
+    if not KJV_PATH.is_file() or not ROOT.is_dir():
+        raise SystemExit(
+            "Brak tekstów źródłowych.\n"
+            f"  polski: {ROOT}\n"
+            f"  KJV:    {KJV_PATH}\n"
+            "W katalogu repozytorium uruchom:\n"
+            "  git submodule update --init"
+        )
     kjv = json.loads(KJV_PATH.read_text(encoding="utf-8"))
     folders = sorted(p for p in ROOT.iterdir() if p.is_dir())
     if len(folders) != 66 or len(kjv) != 66:
@@ -70,10 +116,10 @@ def ps_offset(books):
 class Doc(FPDF):
     def __init__(self):
         super().__init__(format="A4")
-        self.add_font("sans", "", f"{FONT}/DejaVuSans.ttf")
-        self.add_font("sans", "B", f"{FONT}/DejaVuSans-Bold.ttf")
-        self.add_font("serif", "", f"{FONT}/DejaVuSerif.ttf")
-        self.add_font("serif", "B", f"{FONT}/DejaVuSerif-Bold.ttf")
+        self.add_font("sans", "", str(font_file("sans")))
+        self.add_font("sans", "B", str(font_file("sans-bold")))
+        self.add_font("serif", "", str(font_file("serif")))
+        self.add_font("serif", "B", str(font_file("serif-bold")))
         self.set_auto_page_break(auto=True, margin=16)
         self.set_margins(16, 16, 16)
 
