@@ -110,6 +110,12 @@ jobs:
                 "Pierwsze wydanie zestawienia Biblii gdańskiej z 1879 roku z King James Version." \
                 "" \
                 "Plik BG1879-a-KJV.pdf zbudowała akcja z tagu v1. Źródła są tymi commitami, które tag przypina w submodułach.")"
+            elif [ "$TAG" = "v2" ]; then
+              title="Wydanie drugie"
+              notes="$(printf '%s\n' \
+                "Drugie wydanie. Wywód z pierwszego wydania zostaje. Na końcu jest sito puszczone przez każdy zestawiony werset." \
+                "" \
+                "Ezechiela 40,30 jest w tym sicie: pięćdziesiąt łokci wobec pięciu. Fałszywe trafienia zostają w pliku. PDF zbudowała akcja z tagu v2 i nie jest częścią repozytorium.")"
             else
               title="Wydanie $TAG"
               notes="PDF zestawienia zbudowany z tagu ${TAG}."

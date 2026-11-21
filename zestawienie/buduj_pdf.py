@@ -209,6 +209,7 @@ def main():
     psalm_titles(pdf)
     agreements(pdf)
     limit(pdf)
+    filtr_calosci(pdf)
     pdf.output(str(OUT))
     print(f"wrote {OUT} pages={pdf.page_no()}")
 
@@ -222,6 +223,8 @@ def cover(pdf: Doc):
     pdf.mc("Biblia gdańska z 1879 roku\na King James Version", style="B", size=22, h=10)
     pdf.ln(3)
     pdf.mc("Różnice tłumaczenia i skąd się wzięły", size=13, h=7)
+    pdf.ln(2)
+    pdf.mc("Wydanie drugie", size=12, h=6)
     pdf.ln(8)
     pdf.mc((
         "Tekst polski: wydanie z 1879 roku w postaci cyfrowej z repozytorium "
@@ -1051,20 +1054,42 @@ def limit(pdf: Doc):
         "2 Sam. 21,19."
     )
     pdf.p(
-        "Nie sprawdzono każdego wersetu narracji pod kątem drobnego synonimu. W 1 Moj. 1, "
-        "przeczytanym w całości, jedyną różnicą sensu jest rozpostarcie wobec firmamentu. "
-        "Reszta rozdziału idzie krok w krok. Tak wygląda większa część obu Biblii. "
-        "Rozdziały o tej samej liczbie wersetów nie były przeglądane werset po wersecie "
-        "pod kątem wewnętrznego cięcia. Jedno takie cięcie wyszło przy czytaniu 1 Piotra 4 "
-        "i jest w rozdziale o numeracji. Inne mogło zostać. "
-        "Gdyby w jakimś wersecie historycznym zostało inne imię własne albo inne zdanie "
-        "nieujęte w klasach powyżej, tej listy ono nie zamyka. Zamyka ją to, co zmienia "
-        "obraz, wariant albo numer, i co dało się pokazać cytatem z obu plików."
+        "Klasy powyżej są wywodem z cytatów. Nie są przeglądem każdego wersetu. "
+        "Rozdział następny puszcza każdy zestawiony werset przez jedno sito i zostawia "
+        "wszystko, co sito zatrzymało, także trafienia, które różnicą nie są. "
+        "Ezechiela 40,30 jest tam, bo szerokość przysionków jest inna, a rozdział "
+        "ma po obu stronach tę samą liczbę wersetów."
     )
     pdf.p(
         "Tekst polski może jeszcze dostać korektę w repozytorium. Zestawienie dotyczy "
         f"commitu {COMMIT}. Data wydania cyfrowego tego commitu: {COMMIT_WHEN}."
     )
+
+
+def filtr_calosci(pdf: Doc):
+    from zbierz import all_hits
+
+    seen, hits = all_hits()
+    pdf.add_page()
+    pdf.h1("13. Każdy werset")
+    pdf.p(
+        "Każdy werset gdański jest zestawiony ze swoim odpowiednikiem angielskim. "
+        f"Takich par, razem z nagłówkami psalmów, jest {seen}. Sito zostawia parę, "
+        "gdy liczby po sprowadzeniu pisowni z 1879 roku się nie schodzą, gdy nawias "
+        "albo przeczenie jest tylko po jednej stronie, gdy Azazel, Lucyfer albo Jehowa "
+        "zostaje tylko po jednej stronie, albo gdy obie strony mają swój wyraz z krótkiej "
+        "listy obrazów: rozpostarcie i firmament, upodobanie i good will, ojciec i Joseph. "
+        "Do tego dochodzą pary, które to sito pominęło, a czytanie uznało za inny sens. "
+        "Fałszywe trafienia zostają. Odrzuca się je później."
+    )
+    pdf.p(f"Par w tym rozdziale: {len(hits)}.")
+    for i, hit in enumerate(hits, 1):
+        ref = f"{i}.  {hit['book_pl']} {hit['bg_ref']}"
+        if hit["kjv_ref"] and hit["kjv_ref"] != hit["bg_ref"]:
+            ref += f"  =  {hit['book_en']} {hit['kjv_ref']}"
+        ref += "  [" + ", ".join(hit["powody"]) + "]"
+        note = hit["szczegoly"] or None
+        pdf.pair(ref, hit["bg"], hit["kjv"], note)
 
 
 if __name__ == "__main__":

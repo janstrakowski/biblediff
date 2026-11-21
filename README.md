@@ -2,7 +2,7 @@
 
 Zestawienie różnic między wydaniem Biblii gdańskiej z 1879 roku a tekstem King James Version w brzmieniu z 1769 roku. PDF nie jest częścią repozytorium. Nazywa się `BG1879-a-KJV.pdf`.
 
-Pierwsze wydanie to tag `v1`: obecny generator i obecne teksty. Przy wydaniu GitHub Actions buduje ten PDF i dokłada go do wydania.
+Pierwsze wydanie to tag `v1`: wywód z klas miejsc. Drugie wydanie to tag `v2`: ten sam wywód i, na końcu, wszystko, co przeszło przez filtr każdego wersetu. Przy wydaniu GitHub Actions buduje ten PDF i dokłada go do wydania. Plik nie wchodzi do repozytorium.
 
 Porównanie dotyczy folderu `1879` w repozytorium [UczenJezusa/biblia-druk-tekst](https://github.com/UczenJezusa/biblia-druk-tekst), commit `e5b1d3962179321a7bc9e502e634a2354c49a0a5`. Wydania z 1632 i z 2023 roku nie wchodzą do zestawienia. Rok 1879 jest unowocześnioną pisownią przekładu z 1632 roku, nie nowym tłumaczeniem.
 
@@ -59,4 +59,4 @@ Wynik zapisuje się jako `BG1879-a-KJV.pdf` w katalogu głównym. Tego pliku nie
 
 ## Całość
 
-Plan przejścia każdego wersetu, nie tylko klas z obecnego PDF-a, jest w [`zestawienie/calosc.md`](zestawienie/calosc.md). Najpierw powstanie PDF ze wszystkim, co przeszło przez filtr. Odrzucenie fałszywych trafień jest późniejsze.
+Plan przejścia każdego wersetu jest w [`zestawienie/calosc.md`](zestawienie/calosc.md). Od drugiego wydania ten przegląd jest ostatnim rozdziałem `BG1879-a-KJV.pdf`. Pary dopisane przy czytaniu leżą w `zestawienie/kandydaci/sens-*.jsonl`. Zrzut filtra i sam PDF powstają przy budowaniu i do gita nie wchodzą.
