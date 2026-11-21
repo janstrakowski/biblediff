@@ -59,6 +59,29 @@ class Doc(FPDF):
         self.multi_cell(0, h, text, new_x="LMARGIN", new_y="NEXT")
 
 
+def _key(hit: dict, order: dict[str, int]) -> tuple:
+    ref = hit["bg_ref"].split("+")[0]
+    chapter, verses = ref.split(",")
+    verse = int(verses.split("-")[0])
+    return (order[hit["book_pl"]], int(chapter), verse, hit["kjv_ref"])
+
+
+def load_sense(order: dict[str, int]) -> list[dict]:
+    rows = []
+    for path in sorted(OUT_DIR.glob("sens-*.jsonl")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                rows.append(json.loads(line))
+    rows.sort(key=lambda hit: _key(hit, order))
+    return rows
+
+
+def merge(structural: list[dict], sense: list[dict], order: dict[str, int]) -> list[dict]:
+    seen = {(hit["book_pl"], hit["bg_ref"], hit["kjv_ref"]) for hit in structural}
+    extra = [hit for hit in sense if (hit["book_pl"], hit["bg_ref"], hit["kjv_ref"]) not in seen]
+    return sorted(structural + extra, key=lambda hit: _key(hit, order))
+
+
 def collect():
     books = load()
     lexicon = build_lexicon(books)
@@ -97,7 +120,8 @@ def write_pdf(hits: list[dict]) -> None:
     pdf.multi_cell(0, 5, (
         "To nie jest zestawienie cytowane. Są tu wszystkie pary, które filtr "
         "zatrzymał: liczba, nawias, przeczenie, imię zostawione tylko po jednej "
-        "stronie, oraz kilka par obrazu. Fałszywe trafienia odrzuca się później. "
+        "stronie, kilka par obrazu, oraz pary sensu dopisane przy czytaniu. "
+        "Fałszywe trafienia odrzuca się później. "
         f"Par: {len(hits)}."
     ))
     pdf.ln(2)
@@ -121,12 +145,15 @@ def write_pdf(hits: list[dict]) -> None:
 
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    seen, hits = collect()
+    seen, structural = collect()
+    order = {name: i for i, name in enumerate(filtr.PL)}
+    sense = load_sense(order)
+    hits = merge(structural, sense, order)
     with JSONL.open("w", encoding="utf-8") as fh:
-        for hit in hits:
+        for hit in structural:
             fh.write(json.dumps(hit, ensure_ascii=False) + "\n")
     write_pdf(hits)
-    print(f"widziane={seen} trafienia={len(hits)}")
+    print(f"widziane={seen} strukturalne={len(structural)} sens={len(sense)} pdf={len(hits)}")
     print(f"jsonl={JSONL}")
     print(f"pdf={PDF}")
 
