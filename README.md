@@ -8,11 +8,14 @@ Różnicą jest tu inny numer wersetu, inne słowo zmieniające obraz, inny wari
 
 ## Jak odtworzyć PDF
 
-Potrzebny jest Python 3 i pakiet `fpdf2`. Skrypt czyta dwa lokalne źródła. Domyślne ścieżki można nadpisać zmiennymi `BG1879` (folder `1879` z klonu `biblia-druk-tekst`) i `KJV_JSON` (plik JSON z tekstem KJV z 1769 roku).
+Pakiet `fpdf2` instaluje się w osobnym środowisku Condy, z kanału conda-forge. Skrypt czyta dwa lokalne źródła. Domyślne ścieżki można nadpisać zmiennymi `BG1879` (folder `1879` z klonu `biblia-druk-tekst`) i `KJV_JSON` (plik JSON z tekstem KJV z 1769 roku).
 
 ```bash
-pip install fpdf2
-python3 zestawienie/buduj_pdf.py
+conda env create -f environment.yml
+conda activate biblediff
+python zestawienie/buduj_pdf.py
 ```
+
+Przy kolejnym uruchomieniu wystarczy `conda activate biblediff`. Po zmianie `environment.yml` środowisko odświeża `conda env update -f environment.yml --prune`.
 
 Wynik zapisuje się jako `BG1879-a-KJV.pdf` w katalogu głównym. Tego pliku nie commituje się.
