@@ -9,14 +9,15 @@ Cytaty angielskie biorą się z publicznego tekstu KJV w rewizji z 1769 roku.
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
 from fpdf import FPDF
 
-ROOT = Path("/tmp/biblia-src/biblia-druk-tekst/1879")
-KJV_PATH = Path("/tmp/kjv-src/try.json")
-OUT = Path("/agent/repos/tmp-e6d13371fc845140/BG1879-a-KJV.pdf")
+ROOT = Path(os.environ.get("BG1879", "/tmp/biblia-src/biblia-druk-tekst/1879"))
+KJV_PATH = Path(os.environ.get("KJV_JSON", "/tmp/kjv-src/try.json"))
+OUT = Path(__file__).resolve().parent.parent / "BG1879-a-KJV.pdf"
 COMMIT = "e5b1d3962179321a7bc9e502e634a2354c49a0a5"
 COMMIT_WHEN = "8 listopada 2026, 7:57 (czas środkowoeuropejski)"
 
