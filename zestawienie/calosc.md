@@ -33,6 +33,14 @@ Same liczby nie domykają całości. Łukasza 2,14 nie ma w sobie żadnej liczby
 
 ## 3. Najpierw PDF, potem odrzucenie
 
-Na razie powstaje PDF ze wszystkim, co przeszło przez filtr. Człowiek później odrzuca te, które różnicą nie są.
+Pierwszy przebieg jest w `zestawienie/filtr.py` i `zestawienie/zbierz.py`.
+
+```bash
+python zestawienie/zbierz.py
+```
+
+Wynik to `BG1879-a-KJV-filtr.pdf` i `zestawienie/kandydaci/strukturalne.jsonl`. Filtr, który ten przebieg domyka sam, to liczba (po sprowadzeniu pisowni z 1879 roku), nawias, przeczenie, imię zostawione tylko po jednej stronie (Azazel, Lucyfer, Jehowa) i kilka par obrazu, w których obie strony mają swój wyraz. Zwykłe „jeden” i „one” oraz „dziewięć set i trzydzieści” wobec „nine hundred and thirty” nie wchodzą. Otwarte porównanie wszystkich imion nie wchodzi, bo odmiana (Mojżesz i Moses) zasypuje listę.
+
+Pary o podobnej długości, w których zdania nie wynikają z siebie, a nie łapie ich żaden z tych warunków, dochodzą osobno. Człowiek odrzuca fałszywe trafienia dopiero z gotowego PDF-a.
 
 Pierwszy plik nie czeka na werdykt. Jest osobny od zestawienia cytowanego, tego o nazwie `BG1879-a-KJV.pdf`. Rejestr odrzuceń powstaje przy czytaniu PDF-a z filtra. Zostaje w nim albo różnica, albo „ten sam sens”. Kompletność jest w rejestrze: każdy werset ma werdykt. Docelowy PDF zestawienia zostaje wywodem z cytatami, nie zrzutem flag. Ostatni rozdział może wtedy powiedzieć, że przejrzany został każdy werset pod tę regułę, a nie tylko szeol, firmament, passover i reszta zamkniętych list.
